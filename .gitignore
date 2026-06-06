@@ -1,0 +1,205 @@
+# ---------------------------------------------------------------------------
+# Sentiment Analysis Chatbot - .gitignore
+# ---------------------------------------------------------------------------
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+.pybuilder/
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv / poetry / pdm
+Pipfile.lock
+poetry.lock
+pdm.lock
+
+# PEP 582
+__pypackages__/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre
+.pyre/
+
+# pytype
+.pytype/
+
+# Cython debug
+cython_debug/
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---------------------------------------------------------------------------
+# Machine Learning specific
+# ---------------------------------------------------------------------------
+
+# Runtime logs produced by utils.logger
+logs/
+*.log
+!logs/
+!logs/.gitkeep
+
+# Large training datasets
+data/*.csv
+data/*.tsv
+data/*.parquet
+data/*.json
+data/*.zip
+data/*.gz
+data/raw/
+data/interim/
+data/processed/
+
+# Re-include small example/sample datasets that should be tracked
+!data/.gitkeep
+!data/sample/
+
+# Model weights and serialised artefacts
+*.h5
+*.keras
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.pb
+*.tflite
+*.joblib
+*.pkl
+*.pickle
+models/*
+!models/.gitkeep
+!data/Reddit_Data.csv
+!models/sentiment_analysis.h5
+!models/tfidf_vectorizer.pkl
+!models/responses.pkl
+
+# Experiment trackers
+mlruns/
+wandb/
+.tensorboard/
+tensorboard_logs/
+
+# Streamlit cache
+.streamlit/secrets.toml
+
+# Secrets
+*.pem
+*.key
+secrets.json
