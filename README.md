@@ -9,8 +9,7 @@
 ![NLTK 3.9](https://img.shields.io/badge/NLTK-3.9.1-154f3c)
 ![License-MIT](https://img.shields.io/badge/License-MIT-yellow)
 
-> **Live Production:** Designed for edge/cloud deployment
->
+
 > **Status:** Production-ready NLP classification pipeline.
 
 ---
@@ -108,19 +107,19 @@
 
 ## Engineering Triumphs
 
-### 1. Unified Preprocessing Pipeline Eliminates Train-Serve Skew**
+### 1. Unified Preprocessing Pipeline Eliminates Train-Serve Skew
 
 - **Problem:** Training notebooks and inference servers historically diverged on text cleaning, causing silent accuracy degradation in production. The original `model_training.ipynb` and the inference code applied independent preprocessing logic.
 - **Solution:** Extracted a single `TextPreprocessor` class (`utils/text_preprocessing.py:44`) that both `data_ingestion.py` and `model_inference.py` import and call identically. The cleaning sequence — URL removal, non-alpha stripping, whitespace collapse, stop-word filtering, lowercasing — is an exact 1:1 port from the original notebook.
 - **Result:** Zero preprocessing drift between train and serve. Every prediction goes through the exact same transformation the model was trained on, guaranteeing distributional parity.
 
-### 2. Graceful Degradation on Artifact Loading Failure**
+### 2. Graceful Degradation on Artifact Loading Failure
 
 - **Problem:** Missing or corrupt `.pkl` / `.h5` files produced uncaught `FileNotFoundError` or `UnpicklingError` exceptions, crashing the Streamlit process with no actionable feedback.
 - **Solution:** Centralised all artifact IO into `utils/artifact_io.py` with a custom `ArtifactLoadError(RuntimeError)` exception. `load_pickle` and `load_keras_model` validate file existence before deserialising and wrap every failure mode in a single semantically meaningful error type. The `app.py:57-63` entry point catches this error for the response bank and falls back to in-memory defaults; the predictor factory (`app.py:82-91`) renders a user-facing error message without crashing.
 - **Result:** Zero server crashes from missing or corrupt artifacts. Users see friendly diagnostics; operators get logged root causes.
 
-### 3. Twelve-Factor Configuration with Type-Safe Env Parsing**
+### 3. Twelve-Factor Configuration with Type-Safe Env Parsing
 
 - **Problem:** Paths, hyper-parameters, and UI strings were hardcoded across multiple modules, making every deployment a fork-and-pray exercise and configuration audits impossible.
 - **Solution:** A single `config/settings.py` module reads every tunable value from environment variables via three typed accessors — `_get_env` (string), `_get_env_int` (integer), `_get_env_float` (float). Each safely falls back to a documented default when the variable is unset or unparseable. All values are declared as `Final` constants with type aliases. `python-dotenv` transparently loads `.env` files when available.
