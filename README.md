@@ -1,3 +1,5 @@
+
+
 # 🧠 Contextual Sentiment Analysis Engine
 
 ![TensorFlow 2.17](https://img.shields.io/badge/TensorFlow-2.17.1-FF6F00?logo=tensorflow)
@@ -33,96 +35,96 @@
 
 ```
 ┌──────────────┐
-│  Streamlit   │     User types message in chat UI
-│   app.py     │
+│  Streamlit   │     User types message in chat UI
+│   app.py     │
 └──────┬───────┘
-       │  raw text
-       ▼
+       │  raw text
+       ▼
 ┌──────────────────┐
-│ TextPreprocessor │     Clean + strip URLs + remove
-│   .clean()       │     non-alpha + stop-words + lowercase
+│ TextPreprocessor │     Clean + strip URLs + remove
+│   .clean()       │     non-alpha + stop-words + lowercase
 └──────┬───────────┘
-       │  cleaned text
-       ▼
+       │  cleaned text
+       ▼
 ┌──────────────────┐
-│ TfidfVectorizer  │     Transform into sparse TF-IDF
-│  .transform()    │     feature vector (5 000 dims)
+│ TfidfVectorizer  │     Transform into sparse TF-IDF
+│  .transform()    │     feature vector (5 000 dims)
 └──────┬───────────┘
-       │  dense array
-       ▼
+       │  dense array
+       ▼
 ┌──────────────────┐
-│  Keras Model     │     Dense(256)→Dropout(0.5)
-│  .predict()      │     →Dense(128)→Dropout(0.5)
-│  (TensorFlow)    │     →Dense(3, softmax)
+│  Keras Model     │     Dense(256)→Dropout(0.5)
+│  .predict()      │     →Dense(128)→Dropout(0.5)
+│  (TensorFlow)    │     →Dense(3, softmax)
 └──────┬───────────┘
-       │  probability vector
-       ▼
+       │  probability vector
+       ▼
 ┌──────────────────┐
-│  np.argmax()     │     Map to {0:Negative, 1:Neutral, 2:Positive}
+│  np.argmax()     │     Map to {0:Negative, 1:Neutral, 2:Positive}
 └──────┬───────────┘
-       │  class index
-       ▼
+       │  class index
+       ▼
 ┌──────────────────┐
-│ ChatbotResponder │     Pick random reply from
-│ .respond_to_class│     sentiment-groomed response bank
+│ ChatbotResponder │     Pick random reply from
+│ .respond_to_class│     sentiment-groomed response bank
 └──────┬───────────┘
-       │  contextual reply
-       ▼
+       │  contextual reply
+       ▼
 ┌──────────────┐
-│  Streamlit   │     Render "BOT: {response}" to user
-│   app.py     │
+│  Streamlit   │     Render "BOT: {response}" to user
+│   app.py     │
 └──────────────┘
 ```
 
 ### Module Topology
 
 ```
-├── app.py                          # Streamlit shell (thin UI, no domain logic)
+├── app.py                          # Streamlit shell (thin UI, no domain logic)
 ├── config/
-│   └── settings.py                 # Twelve-factor config: env vars + typed coercions
+│   └── settings.py                 # Twelve-factor config: env vars + typed coercions
 ├── src/
-│   ├── data_ingestion.py           # CSV → cleaned → TF-IDF → train/test split
-│   ├── model_training.py           # Keras architecture, training loop, evaluation
-│   ├── model_inference.py          # SentimentPredictor (inference wrapper)
-│   └── response_generator.py       # ChatbotResponder (reply selection engine)
+│   ├── data_ingestion.py           # CSV → cleaned → TF-IDF → train/test split
+│   ├── model_training.py           # Keras architecture, training loop, evaluation
+│   ├── model_inference.py          # SentimentPredictor (inference wrapper)
+│   └── response_generator.py       # ChatbotResponder (reply selection engine)
 ├── utils/
-│   ├── text_preprocessing.py       # Shared preprocessor: exact parity train↔serve
-│   ├── artifact_io.py              # Safe IO: pickle + Keras, typed error hierarchy
-│   └── logger.py                   # Rotating file + stdout, idempotent factory
+│   ├── text_preprocessing.py       # Shared preprocessor: exact parity train↔serve
+│   ├── artifact_io.py              # Safe IO: pickle + Keras, typed error hierarchy
+│   └── logger.py                   # Rotating file + stdout, idempotent factory
 ├── scripts/
-│   ├── train.py                    # CLI: re-run training pipeline end-to-end
-│   └── create_responses.py         # CLI: regenerate response bank pickle
+│   ├── train.py                    # CLI: re-run training pipeline end-to-end
+│   └── create_responses.py         # CLI: regenerate response bank pickle
 ├── models/
-│   ├── sentiment_analysis.h5       # Trained Keras weights
-│   ├── tfidf_vectorizer.pkl        # Fitted TF-IDF transformer
-│   └── responses.pkl               # Serialised response bank
+│   ├── sentiment_analysis.h5       # Trained Keras weights
+│   ├── tfidf_vectorizer.pkl        # Fitted TF-IDF transformer
+│   └── responses.pkl               # Serialised response bank
 ├── data/
-│   └── Reddit_Data.csv             # Raw labelled dataset (Reddit comments)
+│   └── Reddit_Data.csv             # Raw labelled dataset (Reddit comments)
 └── notebooks/
-    └── model_training.ipynb        # Original Jupyter reference notebook
+    └── model_training.ipynb        # Original Jupyter reference notebook
 ```
 
 ---
 
 ## Engineering Triumphs
 
-- **Unified Preprocessing Pipeline Eliminates Train-Serve Skew**
+### 1. Unified Preprocessing Pipeline Eliminates Train-Serve Skew**
 
-  - **Problem:** Training notebooks and inference servers historically diverged on text cleaning, causing silent accuracy degradation in production. The original `model_training.ipynb` and the inference code applied independent preprocessing logic.
-  - **Solution:** Extracted a single `TextPreprocessor` class (`utils/text_preprocessing.py:44`) that both `data_ingestion.py` and `model_inference.py` import and call identically. The cleaning sequence — URL removal, non-alpha stripping, whitespace collapse, stop-word filtering, lowercasing — is an exact 1:1 port from the original notebook.
-  - **Result:** Zero preprocessing drift between train and serve. Every prediction goes through the exact same transformation the model was trained on, guaranteeing distributional parity.
+- **Problem:** Training notebooks and inference servers historically diverged on text cleaning, causing silent accuracy degradation in production. The original `model_training.ipynb` and the inference code applied independent preprocessing logic.
+- **Solution:** Extracted a single `TextPreprocessor` class (`utils/text_preprocessing.py:44`) that both `data_ingestion.py` and `model_inference.py` import and call identically. The cleaning sequence — URL removal, non-alpha stripping, whitespace collapse, stop-word filtering, lowercasing — is an exact 1:1 port from the original notebook.
+- **Result:** Zero preprocessing drift between train and serve. Every prediction goes through the exact same transformation the model was trained on, guaranteeing distributional parity.
 
-- **Graceful Degradation on Artifact Loading Failure**
+### 2. Graceful Degradation on Artifact Loading Failure**
 
-  - **Problem:** Missing or corrupt `.pkl` / `.h5` files produced uncaught `FileNotFoundError` or `UnpicklingError` exceptions, crashing the Streamlit process with no actionable feedback.
-  - **Solution:** Centralised all artifact IO into `utils/artifact_io.py` with a custom `ArtifactLoadError(RuntimeError)` exception. `load_pickle` and `load_keras_model` validate file existence before deserialising and wrap every failure mode in a single semantically meaningful error type. The `app.py:57-63` entry point catches this error for the response bank and falls back to in-memory defaults; the predictor factory (`app.py:82-91`) renders a user-facing error message without crashing.
-  - **Result:** Zero server crashes from missing or corrupt artifacts. Users see friendly diagnostics; operators get logged root causes.
+- **Problem:** Missing or corrupt `.pkl` / `.h5` files produced uncaught `FileNotFoundError` or `UnpicklingError` exceptions, crashing the Streamlit process with no actionable feedback.
+- **Solution:** Centralised all artifact IO into `utils/artifact_io.py` with a custom `ArtifactLoadError(RuntimeError)` exception. `load_pickle` and `load_keras_model` validate file existence before deserialising and wrap every failure mode in a single semantically meaningful error type. The `app.py:57-63` entry point catches this error for the response bank and falls back to in-memory defaults; the predictor factory (`app.py:82-91`) renders a user-facing error message without crashing.
+- **Result:** Zero server crashes from missing or corrupt artifacts. Users see friendly diagnostics; operators get logged root causes.
 
-- **Twelve-Factor Configuration with Type-Safe Env Parsing**
+### 3. Twelve-Factor Configuration with Type-Safe Env Parsing**
 
-  - **Problem:** Paths, hyper-parameters, and UI strings were hardcoded across multiple modules, making every deployment a fork-and-pray exercise and configuration audits impossible.
-  - **Solution:** A single `config/settings.py` module reads every tunable value from environment variables via three typed accessors — `_get_env` (string), `_get_env_int` (integer), `_get_env_float` (float). Each safely falls back to a documented default when the variable is unset or unparseable. All values are declared as `Final` constants with type aliases. `python-dotenv` transparently loads `.env` files when available.
-  - **Result:** Every operational parameter is visible in one 191-line module. CI/CD pipelines inject env vars without code changes. Missing variables gracefully degrade to defaults.
+- **Problem:** Paths, hyper-parameters, and UI strings were hardcoded across multiple modules, making every deployment a fork-and-pray exercise and configuration audits impossible.
+- **Solution:** A single `config/settings.py` module reads every tunable value from environment variables via three typed accessors — `_get_env` (string), `_get_env_int` (integer), `_get_env_float` (float). Each safely falls back to a documented default when the variable is unset or unparseable. All values are declared as `Final` constants with type aliases. `python-dotenv` transparently loads `.env` files when available.
+- **Result:** Every operational parameter is visible in one 191-line module. CI/CD pipelines inject env vars without code changes. Missing variables gracefully degrade to defaults.
 
 ---
 
@@ -131,6 +133,12 @@
 <details>
 <summary><b>View Installation & Execution Commands</b></summary>
 
+### Prerequisites
+- **Python 3.10+**
+- **~500 MB disk space** (for TensorFlow/Keras and model artifacts)
+
+### Installation & First Run
+
 ```bash
 # 1. Clone and enter the repository
 git clone https://github.com/your-org/sentiment-analysis-chatbot.git
@@ -138,8 +146,8 @@ cd sentiment-analysis-chatbot
 
 # 2. Create virtual environment
 python -m venv .venv
-source .venv/bin/activate   # Linux/macOS
-.venv\Scripts\activate      # Windows
+source .venv/bin/activate   # Linux/macOS
+.venv\Scripts\activate      # Windows
 
 # 3. Install pinned dependencies
 pip install -r requirements.txt
@@ -147,18 +155,28 @@ pip install -r requirements.txt
 # 4. (Optional) Customise environment
 cp .env.example .env
 # Edit .env, or set env vars directly in CI/CD
+```
 
-# 5. Train model (or use pre-shipped artifacts in models/)
+**On first execution:**
+The UI will open in your default browser at `http://localhost:8501`. All configurable values are documented in `.env.example`.
+
+### Execution Endpoints
+
+**Generate Artifacts (Train from scratch):**
+
+```bash
 python -m scripts.train
+```
 
-# 6. Regenerate response bank (optional)
-python -m scripts.create_responses
+Ingests `data/Reddit_Data.csv`, runs the full cleaning/TF-IDF/training pipeline, and writes `models/sentiment_analysis.h5` + `models/tfidf_vectorizer.pkl`.
 
-# 7. Launch Streamlit UI
+**Launch Interface:**
+
+```bash
 streamlit run app.py
 ```
 
-The UI opens at `http://localhost:8501`. All configurable values are documented in `.env.example`.
+Spins up the Streamlit web server for real-time sentiment inference on user input.
 </details>
 
 ---
