@@ -85,7 +85,7 @@ class SentimentPredictor:
         sparse_features = self._vectorizer.transform([text])
         return sparse_features.toarray()
 
-    def predict_class(self, text: str, *, preprocess: bool = True) -> int:
+    def predict_class(self, text: str, *, preprocess: bool = False) -> int:
         """Predict the raw integer sentiment class for ``text``.
 
         Args:
